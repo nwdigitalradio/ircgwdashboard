@@ -152,7 +152,7 @@ $(function () {
 		}
 
 		if (data.stats) {
-			if(data.stats.my !== gw.gatewayCallsign)
+			if(data.stats.my !== gw.gatewayCallsign && data.stats.my !== data.repeater)
 			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: " + data.stats.callsign + " duration " 
 				+ data.stats.xmitlength + "<br/>Packet Loss: " + data.stats.packets + " " + data.stats.loss + " at " + data.datestring + "Z");
 		}
@@ -163,7 +163,7 @@ $(function () {
 		}
 
 		if (data.transmit) {
-			if (!data.transmit.flags.startsWith('01') && (data.transmit.my !== gw.gatewayCallsign)){
+			if (!data.transmit.flags.startsWith('01') && data.transmit.my !== gw.gatewayCallsign && data.transmit.my !== data.repeater){
 				if (xmissions[data.repeater].length > 9) {
 					var x = xmissions[data.repeater].shift();
 					console.log(data.repeater + " Dropped: " + x.transmit.my);
