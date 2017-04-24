@@ -1,21 +1,195 @@
-<ul id="messages"></ul>
-<form action="">
-	<input id="m" autocomplete="off" />
-	<input type="submit"/>
-</form>
+<h1>{{gw.gatewayCallsign}} {{title}}</h1>
+<div id='basics'>
+	<fieldset>
+		<legend>{{gw.gatewayCallsign}} Gateway</legend>
+		<div>{{gw.model}}</div>
+		<div>{{gw.hat.vendor}}
+		{{gw.hat.product}}</div>
+		<div id="cpustats"></div>
+	</fieldset>
+</div>
+<!-- <div id='gateway'>{{{json gw}}}</div> -->
+<div id='container'></div>
+<div>
+	<ul id="messages"></ul>
+</div>
+<div id='repeaters'>
+
+</div>
+
 <script>
+var gw = {{{json gw}}};
+var xmissions = [];
+var rptrgwdata = [];
+
+function repeaterCall(data) {
+//	console.log("RepeaterBand " + data);
+	if (data.trim().length === 8) return data;
+	if (data.trim().length === 1) {
+		var callsign = '{{gw.gatewayCallsign}}';
+		while(callsign.length < 7) callsign += ' ';
+		callsign += data.trim();
+		return callsign;
+	}
+	return null;
+}
+
+function rptrBlock(data) {
+	var x = rptrgwdata[data];
+	var html = x.description1 + " " + x.description2 + "<br/>\n";
+		html += "Frequency: " + x.frequency + " mHz. Offset: " + x.offset + "<br/>\n";
+		html += "Latitude " + x.latitude + "&deg; Longitude " + x.longitude + "&deg; ";
+		html += "<a href='http://maps.google.com/maps?q=" + x.latitude + "," + x.longitude + "(label)' target='map'>Map</a><br/>";
+		if (x.reflector.length > 0) {
+			html += "Default Reflector: " + x.reflector;
+			html += "Starts at startup " + x.atStarup === "1" ? "Yes " : "No ";
+			html += "Auto restart " + x.reconnect !== "0" ? "Yes" : "No" + "<br/>\n";
+		}
+		html += "<a href='" + x.url + "' target='new'>" + x.url + "</a>\n";
+	return html;
+}
+
+function buildRepeater(data) {
+	
+	var html = '<fieldset class=\'repeater\' data-repeater=\'' + data + '\'>\n';
+		html +=  '<legend>' + data + '</legend>\n';
+		html +=  '<div class="left">\n';
+		html +=  	'<div class="rptrbasics">' + rptrBlock(data) + '</div>\n';
+		html +=  	'<div class="model"></div>\n';
+		html +=  	'<div class="hat"></div>\n';
+		html +=  '</div>\n';
+		html +=  '<div class="left">\n';
+		html +=  	'<div class="uptime"></div>\n';
+		html +=  	'<div class="cputemp"></div>\n';
+		html +=  	'<div class="loadavg"></div>\n';
+		html +=  '</div>\n';
+		html +=  '<div class="left">\n';
+		html +=  	'<div class="slowdata"></div>\n';
+		html +=  	'<div class="stats"></div>\n';
+		html +=  	'<div class="ambe"></div>\n';
+		html +=  '</div>\n';
+		html +=  '<div class="xmissions">\n<table>\n';
+		html +=  '<thead>\n<tr><th>Time</th><th>Sender</th><th>4 Char</th><th>Destination</th><th>Rpt1</th><th>Rpt2</th><th>Flags</th></tr>\n</thead>\n';
+		html +=  '<tbody>\n</tbody>\n</table>\n</div>\n';
+		html +=  "</fieldset>\n";
+	$('#container').append(html);
+}
+
+function buildRepeaterBasics(key,gwdata,call){
+	var num = key.charAt(key.length-1);
+	var record = {};
+	record.callsign = call;
+	record.url = gwdata['url'+num];
+	record.latitude = gwdata['latitude'+num];
+	record.longitude = gwdata['longitude'+num];
+	record.description1 = gwdata['description'+num+'_1'];
+	record.description2 = gwdata['description'+num+'_2'];
+	record.frequency = gwdata['frequency'+num];
+	record.offset = gwdata['offset'+num];
+	record.atStartup = gwdata['atStartup'+num];
+	record.reflector = gwdata['reflector'+num];
+	record.reconnect = gwdata['reconnect'+num];
+	record.agl = gwdata['agl'+num];
+	console.log(JSON.stringify(record));
+	return record;
+}
+
 $(function () {
+/*	var source = $('#gateway-template').html();
+	var template = hbs.compile(source);
+	var html = template(gw);
+	$('#gateway').html(html);
+*/
+	
+	Object.keys(gw).forEach(function(cKey) {
+		var key = String(cKey);
+//		console.log(key);
+		if (key.startsWith("repeaterBand")) {
+			var band = String(gw[cKey]);
+			var rcall = repeaterCall(band);
+			if (band.length > 0) {
+				rptrgwdata[rcall] = buildRepeaterBasics(key,gw,rcall);
+				buildRepeater(rcall);	
+				xmissions[rcall] = new Array();
+				console.log(JSON.stringify(rptrgwdata[rcall]));
+			}
+		}
+	});
 	var socket = io();
-	$('form').submit(function(){
-		socket.emit('chat message', $('#m').val());
-		$('#m').val('');
-		return false;
+	socket.on('cpu', function(data) {
+		console.log(JSON.stringify(data));
+		$('#messages').append('<li>' + JSON.stringify(data) + '</li>');
 	});
 	socket.on('message', function(data) {
 		$('#messages').append('<li>' + data + '</li>');
 	});
 	socket.on('repeater', function(data) {
-		$('#messages').append('<li>' + JSON.stringify(data) + '</li>');
+//		console.log(JSON.stringify(data));
+//		$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.rawdata').text(JSON.stringify(data) + '<br/>');
+
+		if (data.uptime) {
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.uptime').html("Uptime: " + data.uptime.days + " days " + data.uptime.hms + " h:m:s");
+		}
+
+		if (data.loadavg) {
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.loadavg').html("Load Avg: 1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m']);
+		}
+
+		if (data.cputemp) {
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
+		}
+
+		if (data.slowdata) {
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.slowdata').html("Data: " + data.slowdata);
+		}
+
+		if (data.model) {
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.model').html("Model: " + data.model);
+		}
+
+		if (data.hat) {
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.hat').html("Modem: " + data.hat.product + " by " + data.hat.vendor);
+		}
+
+		if (data.stats) {
+			if(data.stats.my !== gw.gatewayCallsign)
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: " + data.stats.callsign + " duration " 
+				+ data.stats.xmitlength + "<br/>Packet Loss: " + data.stats.packets + " " + data.stats.loss + " at " + data.datestring + "Z");
+		}
+
+		if (data.ambe) {
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.ambe').html("Last Radio Receive: " + data.ambe.callsign + " duration " 
+				+ data.ambe.xmitlength + "<br/>Silence: " + data.ambe.silence + " BER: " + data.ambe.ber + " at " + data.datestring + "Z");
+		}
+
+		if (data.transmit) {
+			if (!data.transmit.flags.startsWith('01') && (data.transmit.my !== gw.gatewayCallsign)){
+				if (xmissions[data.repeater].length > 9) {
+					var x = xmissions[data.repeater].shift();
+					console.log(data.repeater + " Dropped: " + x.transmit.my);
+				}
+				xmissions[data.repeater].push(data);
+				var tbody = "";
+				xmissions[data.repeater].forEach(function(xmit) {
+					var txtab = "<tr>\n";
+					txtab += "<td>" + xmit.datestring + "</td>\n";
+					txtab += "<td>" + xmit.transmit.my + "</td>\n";
+					txtab += "<td>" + xmit.transmit.comment1 + "</td>\n";
+					txtab += "<td>" + xmit.transmit.urcall + "</td>\n";
+					txtab += "<td>" + xmit.transmit.rpt1 + "</td>\n";
+					txtab += "<td>" + xmit.transmit.rpt2 + "</td>\n";
+					txtab += "<td>" + xmit.transmit.flags + "</td>\n";
+					txtab += "</tr>";
+					tbody += txtab;
+				});
+				$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.xmissions tbody').html(tbody);
+				console.log(data.repeater + " Length = " + xmissions[data.repeater].length);
+			}
+		}
+
 	});
+	
 });
 </script>
+
+

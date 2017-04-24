@@ -1,8 +1,8 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
 
-a {
-  color: #00B7FF;
-}
+body { font-family: sans-serif ; padding : 5% }
+.cputemp { color: red }
+.loadavg,.uptime { color: blue }
+th { text-align: left; background-color: black; color: white }
+div.left { float : left; padding-right: 2em; }
+div.right { float : right; }
+div.xmissions { clear: both; }

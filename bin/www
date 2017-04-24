@@ -36,7 +36,7 @@ io.on('connection', function(socket) {
 		socket.send(msg);
 	});
 	socket.on('repeater', function(msg){
-		console.log('repeater: ' + JSON.stringify(msg));
+	//	console.log('repeater: ' + JSON.stringify(msg));
 		socket.broadcast.emit('repeater', msg);
 	});
 });
