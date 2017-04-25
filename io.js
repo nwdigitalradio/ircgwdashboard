@@ -1,5 +1,33 @@
 var io = require('socket.io')();
 var fs = require('fs');
+var ini = require("ini");
+var gwconfig = '/etc/opendv/ircddbgateway';
+var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
+var gw = ini.parse(gwConfStr);
+
+var xmissions = {};
+
+function repeaterCall(data) {
+        if (data.trim().length === 8) return data;
+        if (data.trim().length === 1) {
+                var callsign = gw.gatewayCallsign;
+                while(callsign.length < 7) callsign += ' ';
+                callsign += data.trim();
+                return callsign;
+        }
+        return null;
+}
+
+Object.keys(gw).forEach(function(cKey) {
+	var key = String(cKey);
+	if (key.startsWith("repeaterBand")) {
+		var band = String(gw[cKey]);
+		var rcall = repeaterCall(band);
+		if (band.length > 0) {
+			xmissions[rcall] = new Array();
+		}
+	}
+});
 
 function trimNull(a) {
   var c = a.indexOf('\0');
@@ -33,6 +61,7 @@ function hatRead() {
         return hat;
 }
 
+
 var SecondsTohhmmss = function(totalSeconds) {
         var days = Math.floor(totalSeconds / 86400);
         var used = days * 86400;
@@ -55,12 +84,27 @@ var SecondsTohhmmss = function(totalSeconds) {
 var gwstatseconds = 60 * 1000;
 
 io.on('connection', function(socket) {
-	console.log('a client connected ' + socket.id);
+	for (var key in xmissions) {
+		if(!xmissions.hasOwnProperty(key)) continue;
+		var xmit = xmissions[key];
+		for (var i = 0; i < xmit.length; i++) {
+			socket.emit('repeater',xmit[i]);
+		}
+	}
+
 	socket.on('disconnect', function(){
 		console.log('Client gone (id=' + socket.id + ').');
 	});
 	socket.on('repeater', function(msg){
 		socket.broadcast.emit('repeater', msg);
+		if (msg.transmit) {
+			if (!msg.transmit.flags.startsWith('01') && msg.transmit.my !== gw.gatewayCallsign && msg.transmit.my !== msg.repeater){
+				xmissions[msg.repeater].push(msg);
+				if (xmissions[msg.repeater].length > 10) {
+					var x = xmissions[msg.repeater].shift();
+				}
+			}
+		}
 	});
 	setInterval(
         function() {

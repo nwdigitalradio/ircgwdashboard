@@ -18,18 +18,18 @@
 	<div class="left">
 		<div class="rptrbasics">
 			{{description1}}&nbsp;{{description2}}<br/>
-			Frequency: {{frequency}} mHz. Offset: {{offset}}<br/>
-			Latitude: {{latitude}}&deg;&nbsp;Longitude: {{longitude}}&deg;&nbsp;<a href='http://maps.google.com/maps?q={{latitude}},{{longitude}}({{calsign}}' target='new'>map</a><br/>
+			Frequency: <b>{{frequency}}</b> mHz. Offset: <b>{{offset}}</b><br/>
+			Latitude: <b>{{latitude}}</b>&deg;&nbsp;Longitude: <b>{{longitude}}</b>&deg;&nbsp;<a href='http://maps.google.com/maps?q={{latitude}},{{longitude}}({{calsign}}' target='new'>map</a><br/>
 			{{#if agl}}
-			Antenna Height Above Ground {{agl}} meters<br/>
+			Antenna Height Above Ground <b>{{agl}}</b> meters<br/>
 			{{/if}}
 			{{#if rangeKms}}
-			Estimated Range: {{rangeKms}} km<br/>
+			Estimated Range: <b>{{rangeKms}}</b> km<br/>
 			{{/if}}
 			{{#if reflector}}
-			Default Reflector: {{reflector}}<br/>
-			Start on Startup: {{atStartup}}<br/>
-			Automatic Restart: {{reconnect}}<br/>
+			Default Reflector: <b>{{reflector}}</b><br/>
+			Start on Startup: <b>{{atStartup}}</b><br/>
+			Automatic Restart: <b>{{reconnect}}</b><br/>
 			{{/if}}
 			<a href='{{url}}' target='new'>{{url}}</a>
 		</div>
