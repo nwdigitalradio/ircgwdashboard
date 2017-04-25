@@ -5,6 +5,8 @@ var ini = require("ini");
 var gwconfig = '/etc/opendv/ircddbgateway';
 var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
 var gwconf = ini.parse(gwConfStr);
+var rptrgwdata = [];
+var xmissions = [];
 
 String.prototype.startsWith = function (str)
 {
@@ -50,8 +52,54 @@ function hatRead() {
         return hat;
 }
 
-gwconf['hat'] = hatRead();
-gwconf['model'] = getModel();
+
+function repeaterCall(data) {
+        if (data.trim().length === 8) return data;
+        if (data.trim().length === 1) {
+                var callsign = gwconf.gatewayCallsign;
+                while(callsign.length < 7) callsign += ' ';
+                callsign += data.trim();
+                return callsign;
+        }
+        return null;
+}
+
+function buildRepeaterBasics(key,gwdata,call){
+	var num = key.charAt(key.length-1);
+       	var record = {};
+       	record.callsign = call;
+       	record.url = gwdata['url'+num];
+       	record.latitude = gwdata['latitude'+num];
+       	record.longitude = gwdata['longitude'+num];
+       	record.description1 = gwdata['description'+num+'_1'];
+       	record.description2 = gwdata['description'+num+'_2'];
+       	record.frequency = gwdata['frequency'+num];
+       	record.offset = gwdata['offset'+num];
+       	record.atStartup = gwdata['atStartup'+num];
+       	record.reflector = gwdata['reflector'+num];
+       	record.reconnect = gwdata['reconnect'+num];
+       	record.agl = gwdata['agl'+num];
+	record.rangeKms = gwdata['rangeKms'+num];
+       	console.log(JSON.stringify(record));
+       	return record;
+}
+
+Object.keys(gwconf).forEach(function(cKey) {
+	var key = String(cKey);
+	if (key.startsWith("repeaterBand")) {
+       		var band = String(gwconf[cKey]);
+		var rcall = repeaterCall(band);
+		if (band.length > 0) {
+			rptrgwdata.push(buildRepeaterBasics(key,gwconf,rcall));
+			xmissions[rcall] = new Array();
+		}
+	}
+});
+
+gwconf.model = getModel();
+gwconf.hat = hatRead();
+
+
 Object.keys(gwconf).forEach(function(cKey) {
 	var key = String(cKey);
 	if (key.startsWith("ircddbPassword") || key.startsWith("remote")) {
@@ -61,7 +109,7 @@ Object.keys(gwconf).forEach(function(cKey) {
 });
 /* GET home page. */
 router.get('/', function(req, res, next) {
-	res.render('home', { title: 'Dashboard', gw : gwconf });
+	res.render('home', { title: gwconf.gatewayCallsign + ' Dashboard', gw : gwconf, repeaters : rptrgwdata });
 });
 
 module.exports = router;

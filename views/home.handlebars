@@ -1,132 +1,116 @@
 <h1>{{gw.gatewayCallsign}} {{title}}</h1>
 <div id='basics'>
-	<fieldset>
+	<fieldset id="gateway">
 		<legend>{{gw.gatewayCallsign}} Gateway</legend>
-		<div>{{gw.model}}</div>
-		<div>{{gw.hat.vendor}}
-		{{gw.hat.product}}</div>
-		<div id="cpustats"></div>
+		<div class="left">
+			<div>{{gw.model}}</div>
+			<div>{{gw.hat.vendor}}&nbsp;{{gw.hat.product}}</div>
+		</div>
+		<div class="left">
+			<div class='uptime'></div>
+			<div class='cputemp'></div>
+			<div class='loadavg'></div>
+		</div>
 	</fieldset>
-</div>
-<!-- <div id='gateway'>{{{json gw}}}</div> -->
-<div id='container'></div>
-<div>
-	<ul id="messages"></ul>
-</div>
-<div id='repeaters'>
-
+	{{#each repeaters}}
+	<fieldset class='repeater' data-repeater='{{callsign}}'>
+	<legend>{{callsign}}</legend>
+	<div class="left">
+		<div class="rptrbasics">
+			{{description1}}&nbsp;{{description2}}<br/>
+			Frequency: {{frequency}} mHz. Offset: {{offset}}<br/>
+			Latitude: {{latitude}}&deg;&nbsp;Longitude: {{longitude}}&deg;&nbsp;<a href='http://maps.google.com/maps?q={{latitude}},{{longitude}}({{calsign}}' target='new'>map</a><br/>
+			{{#if agl}}
+			Antenna Height Above Ground {{agl}} meters<br/>
+			{{/if}}
+			{{#if rangeKms}}
+			Estimated Range: {{rangeKms}} km<br/>
+			{{/if}}
+			{{#if reflector}}
+			Default Reflector: {{reflector}}<br/>
+			Start on Startup: {{atStartup}}<br/>
+			Automatic Restart: {{reconnect}}<br/>
+			{{/if}}
+			<a href='{{url}}' target='new'>{{url}}</a>
+		</div>
+		<div class='model'></div>
+		<div class='hat'></div>
+	</div>
+	<div class="left">
+                <div class='uptime'></div>
+                <div class='cputemp'></div>
+                <div class='loadavg'></div>
+	</div>
+	<div class="left">
+		<div class="slowdata"></div>
+		<div class="stats"></div>
+		<div class="ambe"></div>
+	</div>
+	<div class="xmissions">
+		<table>
+			<thead>
+				<tr>
+					<th>Time</th>
+					<th>Sender</th>
+					<th>4 Char</th>
+					<th>Destination</th>
+					<th>Rpt1</th>
+					<th>Rpt2</th>
+					<th>Flags</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	</fieldset>	
+	{{/each}}
 </div>
 
 <script>
 var gw = {{{json gw}}};
 var xmissions = [];
-var rptrgwdata = [];
+// var rptrgwdata = [];
 
 function repeaterCall(data) {
-//	console.log("RepeaterBand " + data);
-	if (data.trim().length === 8) return data;
-	if (data.trim().length === 1) {
-		var callsign = '{{gw.gatewayCallsign}}';
-		while(callsign.length < 7) callsign += ' ';
-		callsign += data.trim();
-		return callsign;
-	}
-	return null;
-}
-
-function rptrBlock(data) {
-	var x = rptrgwdata[data];
-	var html = x.description1 + " " + x.description2 + "<br/>\n";
-		html += "Frequency: " + x.frequency + " mHz. Offset: " + x.offset + "<br/>\n";
-		html += "Latitude " + x.latitude + "&deg; Longitude " + x.longitude + "&deg; ";
-		html += "<a href='http://maps.google.com/maps?q=" + x.latitude + "," + x.longitude + "(label)' target='map'>Map</a><br/>";
-		if (x.reflector.length > 0) {
-			html += "Default Reflector: " + x.reflector;
-			html += "Starts at startup " + x.atStarup === "1" ? "Yes " : "No ";
-			html += "Auto restart " + x.reconnect !== "0" ? "Yes" : "No" + "<br/>\n";
-		}
-		html += "<a href='" + x.url + "' target='new'>" + x.url + "</a>\n";
-	return html;
-}
-
-function buildRepeater(data) {
-	
-	var html = '<fieldset class=\'repeater\' data-repeater=\'' + data + '\'>\n';
-		html +=  '<legend>' + data + '</legend>\n';
-		html +=  '<div class="left">\n';
-		html +=  	'<div class="rptrbasics">' + rptrBlock(data) + '</div>\n';
-		html +=  	'<div class="model"></div>\n';
-		html +=  	'<div class="hat"></div>\n';
-		html +=  '</div>\n';
-		html +=  '<div class="left">\n';
-		html +=  	'<div class="uptime"></div>\n';
-		html +=  	'<div class="cputemp"></div>\n';
-		html +=  	'<div class="loadavg"></div>\n';
-		html +=  '</div>\n';
-		html +=  '<div class="left">\n';
-		html +=  	'<div class="slowdata"></div>\n';
-		html +=  	'<div class="stats"></div>\n';
-		html +=  	'<div class="ambe"></div>\n';
-		html +=  '</div>\n';
-		html +=  '<div class="xmissions">\n<table>\n';
-		html +=  '<thead>\n<tr><th>Time</th><th>Sender</th><th>4 Char</th><th>Destination</th><th>Rpt1</th><th>Rpt2</th><th>Flags</th></tr>\n</thead>\n';
-		html +=  '<tbody>\n</tbody>\n</table>\n</div>\n';
-		html +=  "</fieldset>\n";
-	$('#container').append(html);
-}
-
-function buildRepeaterBasics(key,gwdata,call){
-	var num = key.charAt(key.length-1);
-	var record = {};
-	record.callsign = call;
-	record.url = gwdata['url'+num];
-	record.latitude = gwdata['latitude'+num];
-	record.longitude = gwdata['longitude'+num];
-	record.description1 = gwdata['description'+num+'_1'];
-	record.description2 = gwdata['description'+num+'_2'];
-	record.frequency = gwdata['frequency'+num];
-	record.offset = gwdata['offset'+num];
-	record.atStartup = gwdata['atStartup'+num];
-	record.reflector = gwdata['reflector'+num];
-	record.reconnect = gwdata['reconnect'+num];
-	record.agl = gwdata['agl'+num];
-	console.log(JSON.stringify(record));
-	return record;
+        if (data.trim().length === 8) return data;
+        if (data.trim().length === 1) {
+                var callsign = gw.gatewayCallsign;
+                while(callsign.length < 7) callsign += ' ';
+                callsign += data.trim();
+                return callsign;
+        }
+        return null;
 }
 
 $(function () {
-/*	var source = $('#gateway-template').html();
-	var template = hbs.compile(source);
-	var html = template(gw);
-	$('#gateway').html(html);
-*/
 	
 	Object.keys(gw).forEach(function(cKey) {
 		var key = String(cKey);
-//		console.log(key);
 		if (key.startsWith("repeaterBand")) {
 			var band = String(gw[cKey]);
 			var rcall = repeaterCall(band);
 			if (band.length > 0) {
-				rptrgwdata[rcall] = buildRepeaterBasics(key,gw,rcall);
-				buildRepeater(rcall);	
 				xmissions[rcall] = new Array();
-				console.log(JSON.stringify(rptrgwdata[rcall]));
 			}
 		}
 	});
 	var socket = io();
-	socket.on('cpu', function(data) {
-		console.log(JSON.stringify(data));
-		$('#messages').append('<li>' + JSON.stringify(data) + '</li>');
-	});
-	socket.on('message', function(data) {
-		$('#messages').append('<li>' + data + '</li>');
-	});
-	socket.on('repeater', function(data) {
-//		console.log(JSON.stringify(data));
-//		$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.rawdata').text(JSON.stringify(data) + '<br/>');
+	socket.on('gateway', function(data) {
+		if (data.uptime) {
+                        $('fieldset#gateway div.uptime').html("Uptime: " + data.uptime.days + " days " + data.uptime.hms + " h:m:s");
+                }
 
+                if (data.loadavg) {
+                        $('fieldset#gateway div.loadavg').html("Load Avg: 1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m']);
+                }
+
+                if (data.cputemp) {
+                         $('fieldset#gateway div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
+                }
+	});
+	
+	socket.on('repeater', function(data) {
 		if (data.uptime) {
 			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.uptime').html("Uptime: " + data.uptime.days + " days " + data.uptime.hms + " h:m:s");
 		}
