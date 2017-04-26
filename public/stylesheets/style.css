@@ -1,9 +1,10 @@
 
-body { font-family: sans-serif ; padding : 5% }
-.cputemp { color: red }
+body { font-family: sans-serif ; padding : 10px; }
+.cputemp { color: magenta }
 .loadavg,.uptime { color: blue }
 th { text-align: left; background-color: black; color: white }
 div.left { float : left; padding-right: 2em; }
 div.right { float : right; }
 div.xmissions { clear: left; }
 tr.xmitter { background: red; color: white}
+fieldset {margin-top: 10px;}

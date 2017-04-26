@@ -14,7 +14,7 @@
 	</fieldset>
 	{{#each repeaters}}
 	<fieldset class='repeater' data-repeater='{{callsign}}'>
-	<legend>{{callsign}}</legend>
+	<legend>{{callsign}}<span class="link"/></legend>
 	<div class="xmissions">
 		<h3>Recent Traffic on {{callsign}}</h3>
 		<table>
@@ -112,6 +112,14 @@ $(function () {
                 if (data.cputemp) {
                          $('fieldset#gateway div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
                 }
+		if (data.links) {
+			$('span.link').html("");
+			var links = data.links;
+			for (var i=0; i<links.length ; i++) {
+				var link = links[i];
+				if (link.direction === 'Outgoing') $('fieldset.repeater[data-repeater="' + link.repeater + '"] span.link').html(' - ' + link.reflector).attr('title',link.source);
+			}
+		}
 	});
 	
 	socket.on('repeater', function(data) {

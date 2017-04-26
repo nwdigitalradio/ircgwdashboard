@@ -1,11 +1,21 @@
 var io = require('socket.io')();
 var fs = require('fs');
 var ini = require("ini");
+// var gwconfig = process.ENV.IRCDDBGATEWAY || '/etc/opendv/ircddbgateway';
+// var LinkLOG = process.ENV.LINKLOG || '/var/log/opendv/Links.log';
 var gwconfig = '/etc/opendv/ircddbgateway';
+var LinkLOG = '/var/log/opendv/Links.log';
 var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
 var gw = ini.parse(gwConfStr);
 
 var xmissions = {};
+
+function trimBetween(str, before, after) {
+	var left = str.indexOf(before) + before.length;
+	var right = str.indexOf(after);
+	var target = str.substring(left, right).trim();
+	return target;
+}
 
 function repeaterCall(data) {
         if (data.trim().length === 8) return data;
@@ -81,7 +91,28 @@ var SecondsTohhmmss = function(totalSeconds) {
         return result;
 }
 
+function parseLinks(line) {
+	var rest = line.substr(21);
+	var rec = {};
+	rec.datestamp = line.substr(0, 19);
+	rec.date = line.substr(0, 10);
+	rec.time = line.substr(11, 8);
+	rec.source = rest.substring(0, rest.indexOf('-') - 1).trim();
+	rec.direction = rest.substr(rest.lastIndexOf(':') + 1).trim();
+
+	if (rest.indexOf('User') > 0) {
+		rec.user = trimBetween(rest, "User:", "Dir:");
+		rec.type = trimBetween(rest, "Type:", "User:");
+	} else {
+		rec.type = trimBetween(rest, "Type:", "Rptr:");
+		rec.repeater = trimBetween(rest, "Rptr:", "Refl:");
+		rec.reflector = trimBetween(rest, "Refl:", "Dir:");
+	}
+	return rec;
+}
+
 var gwstatseconds = 60 * 1000;
+var links = [];
 
 io.on('connection', function(socket) {
 	for (var key in xmissions) {
@@ -91,6 +122,7 @@ io.on('connection', function(socket) {
 			socket.emit('repeater',xmit[i]);
 		}
 		socket.emit('gateway',{xmitreset:true});
+		socket.emit('gateway',{links:links});
 	}
 
 	socket.on('disconnect', function(){
@@ -105,6 +137,19 @@ io.on('connection', function(socket) {
 					var x = xmissions[msg.repeater].shift();
 				}
 			}
+		}
+	});
+
+	fs.watch(LinkLOG, function(event, filename) {
+		if (event === 'change') {
+			links = [];
+				fs.readFileSync(LinkLOG).toString().split('\n').forEach(function(line) {
+					if (line.trim().length > 0) {
+						var linkline = parseLinks(line);
+						links.push(linkline);
+					}
+				});
+				socket.emit('gateway', {links:links});
 		}
 	});
 	setInterval(
