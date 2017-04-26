@@ -15,6 +15,25 @@
 	{{#each repeaters}}
 	<fieldset class='repeater' data-repeater='{{callsign}}'>
 	<legend>{{callsign}}</legend>
+	<div class="xmissions">
+		<h3>Recent Traffic on {{callsign}}</h3>
+		<table>
+			<thead>
+				<tr>
+					<th>Time</th>
+					<th>Sender</th>
+					<th>4 Char</th>
+					<th>Destination</th>
+					<th>Rpt1</th>
+					<th>Rpt2</th>
+					<th>Flags</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+		<br/>
+	</div>
 	<div class="left">
 		<div class="rptrbasics">
 			{{description1}}&nbsp;{{description2}}<br/>
@@ -43,25 +62,6 @@
                 <div class='uptime'></div>
                 <div class='cputemp'></div>
                 <div class='loadavg'></div>
-	</div>
-	<div class="xmissions">
-		<br/>
-		<h3>Recent Traffic on {{callsign}}</h3>
-		<table>
-			<thead>
-				<tr>
-					<th>Time</th>
-					<th>Sender</th>
-					<th>4 Char</th>
-					<th>Destination</th>
-					<th>Rpt1</th>
-					<th>Rpt2</th>
-					<th>Flags</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
 	</div>
 	</fieldset>	
 	{{/each}}

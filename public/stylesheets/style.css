@@ -5,5 +5,5 @@ body { font-family: sans-serif ; padding : 5% }
 th { text-align: left; background-color: black; color: white }
 div.left { float : left; padding-right: 2em; }
 div.right { float : right; }
-div.xmissions { clear: both; }
+div.xmissions { clear: left; }
 tr.xmitter { background: red; color: white}
