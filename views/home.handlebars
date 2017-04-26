@@ -37,16 +37,16 @@
 		<div class='hat'></div>
 	</div>
 	<div class="left">
+		<div class="slowdata"></div>
+		<div class="stats"></div>
+		<div class="ambe"></div>
                 <div class='uptime'></div>
                 <div class='cputemp'></div>
                 <div class='loadavg'></div>
 	</div>
-	<div class="left">
-		<div class="slowdata"></div>
-		<div class="stats"></div>
-		<div class="ambe"></div>
-	</div>
 	<div class="xmissions">
+		<br/>
+		<h3>Recent Traffic on {{callsign}}</h3>
 		<table>
 			<thead>
 				<tr>
@@ -105,6 +105,10 @@ $(function () {
                         $('fieldset#gateway div.loadavg').html("Load Avg: 1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m']);
                 }
 
+                if (data.xmitreset) {
+			$('tr[data-xmit]').attr("class","");
+                }
+
                 if (data.cputemp) {
                          $('fieldset#gateway div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
                 }
@@ -136,13 +140,15 @@ $(function () {
 		}
 
 		if (data.stats) {
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr[data-xmit="' + data.stats.callsign + '"]').attr("class","");
 			if(data.stats.my !== gw.gatewayCallsign && data.stats.my !== data.repeater)
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: " + data.stats.callsign + " duration " 
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: " + data.stats.callsign + " duration " 
 				+ data.stats.xmitlength + "<br/>Packet Loss: " + data.stats.packets + " " + data.stats.loss + " at " + data.datestring + "Z");
 		}
 
 		if (data.ambe) {
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.ambe').html("Last Radio Receive: " + data.ambe.callsign + " duration " 
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr[data-xmit="' + data.ambe.callsign + '"]').attr("class","");
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.ambe').html("Last Radio Receive: " + data.ambe.callsign + " duration " 
 				+ data.ambe.xmitlength + "<br/>Silence: " + data.ambe.silence + " BER: " + data.ambe.ber + " at " + data.datestring + "Z");
 		}
 
@@ -155,7 +161,7 @@ $(function () {
 				xmissions[data.repeater].push(data);
 				var tbody = "";
 				xmissions[data.repeater].forEach(function(xmit) {
-					var txtab = "<tr>\n";
+					var txtab = "<tr>\n"; 
 					txtab += "<td>" + xmit.datestring + "</td>\n";
 					txtab += "<td>" + xmit.transmit.my + "</td>\n";
 					txtab += "<td>" + xmit.transmit.comment1 + "</td>\n";
@@ -167,7 +173,7 @@ $(function () {
 					tbody += txtab;
 				});
 				$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.xmissions tbody').html(tbody);
-				console.log(data.repeater + " Length = " + xmissions[data.repeater].length);
+				$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr:last').attr("class","xmitter").attr("data-xmit",data.transmit.my);
 			}
 		}
 

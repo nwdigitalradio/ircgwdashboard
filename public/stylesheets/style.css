@@ -6,3 +6,4 @@ th { text-align: left; background-color: black; color: white }
 div.left { float : left; padding-right: 2em; }
 div.right { float : right; }
 div.xmissions { clear: both; }
+tr.xmitter { background: red; color: white}

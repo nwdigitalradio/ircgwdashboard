@@ -90,6 +90,7 @@ io.on('connection', function(socket) {
 		for (var i = 0; i < xmit.length; i++) {
 			socket.emit('repeater',xmit[i]);
 		}
+		socket.emit('gateway',{xmitreset:true});
 	}
 
 	socket.on('disconnect', function(){
