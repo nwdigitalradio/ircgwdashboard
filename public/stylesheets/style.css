@@ -8,3 +8,5 @@ div.right { float : right; }
 div.xmissions { clear: left; }
 tr.xmitter { background: red; color: white}
 fieldset {margin-top: 10px;}
+span.link {color: blue }
+div.model,div.hat,div.url {font-weight: bold }

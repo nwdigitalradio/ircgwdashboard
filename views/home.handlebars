@@ -3,8 +3,9 @@
 	<fieldset id="gateway">
 		<legend>{{gw.gatewayCallsign}} Gateway</legend>
 		<div class="left">
-			<div>{{gw.model}}</div>
-			<div>{{gw.hat.vendor}}&nbsp;{{gw.hat.product}}</div>
+			<div><b>{{gw.model}}</b></div>
+			<div><b>{{gw.hat.vendor}}&nbsp;{{gw.hat.product}}</b></div>
+			<div class='url'>{{gw.url}}</div>
 		</div>
 		<div class="left">
 			<div class='uptime'></div>
@@ -36,7 +37,7 @@
 	</div>
 	<div class="left">
 		<div class="rptrbasics">
-			{{description1}}&nbsp;{{description2}}<br/>
+			<b>{{description1}}&nbsp;{{description2}}</b><br/>
 			Frequency: <b>{{frequency}}</b> mHz. Offset: <b>{{offset}}</b><br/>
 			Latitude: <b>{{latitude}}</b>&deg;&nbsp;Longitude: <b>{{longitude}}</b>&deg;&nbsp;<a href='http://maps.google.com/maps?q={{latitude}},{{longitude}}({{calsign}}' target='new'>map</a><br/>
 			{{#if agl}}
@@ -50,10 +51,12 @@
 			Start on Startup: <b>{{atStartup}}</b><br/>
 			Automatic Restart: <b>{{reconnect}}</b><br/>
 			{{/if}}
-			<a href='{{url}}' target='new'>{{url}}</a>
 		</div>
 		<div class='model'></div>
 		<div class='hat'></div>
+		<div class='url'>
+			<a href='{{url}}' target='new'>{{url}}</a>
+		</div>
 	</div>
 	<div class="left">
 		<div class="slowdata"></div>
@@ -98,11 +101,11 @@ $(function () {
 	var socket = io();
 	socket.on('gateway', function(data) {
 		if (data.uptime) {
-                        $('fieldset#gateway div.uptime').html("Uptime: " + data.uptime.days + " days " + data.uptime.hms + " h:m:s");
+                        $('fieldset#gateway div.uptime').html("Uptime: <b>" + data.uptime.days + " days " + data.uptime.hms + " h:m:s</b>");
                 }
 
                 if (data.loadavg) {
-                        $('fieldset#gateway div.loadavg').html("Load Avg: 1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m']);
+                        $('fieldset#gateway div.loadavg').html("Load Avg: <b>1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m'] + "</b>");
                 }
 
                 if (data.xmitreset) {
@@ -110,7 +113,7 @@ $(function () {
                 }
 
                 if (data.cputemp) {
-                         $('fieldset#gateway div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
+                         $('fieldset#gateway div.cputemp').html("CPU Temp: <b>" + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C</b>");
                 }
 		if (data.links) {
 			$('span.link').html("");
@@ -124,40 +127,42 @@ $(function () {
 	
 	socket.on('repeater', function(data) {
 		if (data.uptime) {
-			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.uptime').html("Uptime: " + data.uptime.days + " days " + data.uptime.hms + " h:m:s");
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.uptime').html("Uptime: <b>" + data.uptime.days + " days " + data.uptime.hms + " h:m:s</b>");
 		}
 
 		if (data.loadavg) {
-			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.loadavg').html("Load Avg: 1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m']);
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.loadavg').html("Load Avg: <b>1m " + data.loadavg['1m'] + " 5m " + data.loadavg['5m'] + " 15m " + data.loadavg['15m'] + "</b>");
 		}
 
 		if (data.cputemp) {
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.cputemp').html("CPU Temp: " + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C");
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.cputemp').html("CPU Temp: <b>" + data.cputemp.f + "&deg;F " + data.cputemp.c + "&deg;C</b>");
 		}
 
 		if (data.slowdata) {
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.slowdata').html("Data: " + data.slowdata);
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.slowdata').html("Last TXT: <b>" + data.slowdata + "</b>");
 		}
 
 		if (data.model) {
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.model').html("Model: " + data.model);
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.model').html(data.model);
 		}
 
 		if (data.hat) {
-			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.hat').html("Modem: " + data.hat.product + " by " + data.hat.vendor);
+			 $('fieldset.repeater[data-repeater="' + data.repeater + '"] div.hat').html(data.hat.product + " by " + data.hat.vendor);
 		}
 
 		if (data.stats) {
+			var d = new Date(data.timestamp);
 			$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr[data-xmit="' + data.stats.callsign + '"]').attr("class","");
 			if(data.stats.my !== gw.gatewayCallsign && data.stats.my !== data.repeater)
-			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: " + data.stats.callsign + " duration " 
-				+ data.stats.xmitlength + "<br/>Packet Loss: " + data.stats.packets + " " + data.stats.loss + " at " + data.datestring + "Z");
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: <b>" + data.stats.callsign + "</b> duration <b>" 
+				+ data.stats.xmitlength + "</b><br/>Packet Loss: <b>" + data.stats.packets + " " + data.stats.loss + "</b> at <b>" + d.toLocaleString() + "</b>");
 		}
 
 		if (data.ambe) {
+			var d = new Date(data.timestamp);
 			$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr[data-xmit="' + data.ambe.callsign + '"]').attr("class","");
-			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.ambe').html("Last Radio Receive: " + data.ambe.callsign + " duration " 
-				+ data.ambe.xmitlength + "<br/>Silence: " + data.ambe.silence + " BER: " + data.ambe.ber + " at " + data.datestring + "Z");
+			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.ambe').html("Last Radio Receive: <b>" + data.ambe.callsign + "</b> duration <b>" 
+				+ data.ambe.xmitlength + "</b><br/>Silence: <b>" + data.ambe.silence + "</b> BER: <b>" + data.ambe.ber + "</b> at <b>" + d.toLocaleString() + "</b>");
 		}
 
 		if (data.transmit) {
@@ -169,8 +174,10 @@ $(function () {
 				xmissions[data.repeater].push(data);
 				var tbody = "";
 				xmissions[data.repeater].forEach(function(xmit) {
+					var d = new Date(xmit.timestamp);
+					
 					var txtab = "<tr>\n"; 
-					txtab += "<td>" + xmit.datestring + "</td>\n";
+					txtab += "<td>" + d.toLocaleString() + "</td>\n";
 					txtab += "<td>" + xmit.transmit.my + "</td>\n";
 					txtab += "<td>" + xmit.transmit.comment1 + "</td>\n";
 					txtab += "<td>" + xmit.transmit.urcall + "</td>\n";
