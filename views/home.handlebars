@@ -39,7 +39,7 @@
 		<div class="rptrbasics">
 			<b>{{description1}}&nbsp;{{description2}}</b><br/>
 			Frequency: <b>{{frequency}}</b> mHz. Offset: <b>{{offset}}</b><br/>
-			Latitude: <b>{{latitude}}</b>&deg;&nbsp;Longitude: <b>{{longitude}}</b>&deg;&nbsp;<a href='http://maps.google.com/maps?q={{latitude}},{{longitude}}({{calsign}}' target='new'>map</a><br/>
+			Latitude: <b>{{latitude}}</b>&deg;&nbsp;Longitude: <b>{{longitude}}</b>&deg;&nbsp;<a href='http://maps.google.com/maps?q=loc:{{latitude}},{{longitude}}({{callsign}})' target='new'>map</a><br/>
 			{{#if agl}}
 			Antenna Height Above Ground <b>{{agl}}</b> meters<br/>
 			{{/if}}
