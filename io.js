@@ -114,11 +114,23 @@ function parseLinks(line) {
 var gwstatseconds = 60 * 1000;
 var links = [];
 
-io.on('connection', function(socket) {
+function init(socket) {
+
 	socket.emit('gateway',{xmitreset:true});
 	socket.emit('gateway',{links:links});
 	socket.emit('repeater',{xmissions:xmissions});
+	fs.readFileSync(LinkLOG).toString().split('\n').forEach(function(line) {
+		if (line.trim().length > 0) {
+			var linkline = parseLinks(line);
+			links.push(linkline);
+		}
+	});
+	socket.emit('gateway', {links:links});
 
+}
+
+io.on('connection', function(socket) {
+	init(socket);
 	socket.on('disconnect', function(){
 		console.log('Client gone (id=' + socket.id + ').');
 	});
