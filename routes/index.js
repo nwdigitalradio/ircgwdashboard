@@ -80,7 +80,7 @@ function buildRepeaterBasics(key,gwdata,call){
        	record.reconnect = gwdata['reconnect'+num];
        	record.agl = gwdata['agl'+num];
 	record.rangeKms = gwdata['rangeKms'+num];
-       	console.log(JSON.stringify(record));
+//       	console.log(JSON.stringify(record));
        	return record;
 }
 

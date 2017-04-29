@@ -71,14 +71,11 @@
 </div>
 
 <script>
-var gw = {{{json gw}}};
-var xmissions = [];
-// var rptrgwdata = [];
 
 function repeaterCall(data) {
         if (data.trim().length === 8) return data;
         if (data.trim().length === 1) {
-                var callsign = gw.gatewayCallsign;
+                var callsign = '{{gw.gatewayCallsign}}';
                 while(callsign.length < 7) callsign += ' ';
                 callsign += data.trim();
                 return callsign;
@@ -86,20 +83,35 @@ function repeaterCall(data) {
         return null;
 }
 
+function xmissionTable(data) {
+	for (var repeater in data) {
+		var tbody = "";
+		if(!data.hasOwnProperty(repeater)) continue;
+		data[repeater].forEach(function(xmit) {
+			var d = new Date(xmit.timestamp);
+			var txtab = "<tr>\n";
+			txtab += "<td>" + d.toLocaleString() + "</td>\n";
+			txtab += "<td>" + xmit.transmit.my + "</td>\n";
+			txtab += "<td>" + xmit.transmit.comment1 + "</td>\n";
+			txtab += "<td>" + xmit.transmit.urcall + "</td>\n";
+			txtab += "<td>" + xmit.transmit.rpt1 + "</td>\n";
+			txtab += "<td>" + xmit.transmit.rpt2 + "</td>\n";
+			txtab += "<td>" + xmit.transmit.flags + "</td>\n";
+			txtab += "</tr>";
+			tbody += txtab;
+		});
+		$('fieldset.repeater[data-repeater="' + repeater + '"] div.xmissions tbody').html(tbody);
+	}
+}
+
 $(function () {
 	
-	Object.keys(gw).forEach(function(cKey) {
-		var key = String(cKey);
-		if (key.startsWith("repeaterBand")) {
-			var band = String(gw[cKey]);
-			var rcall = repeaterCall(band);
-			if (band.length > 0) {
-				xmissions[rcall] = new Array();
-			}
-		}
-	});
 	var socket = io();
 	socket.on('gateway', function(data) {
+		if (data.xmissions) {
+			xmissionTable(data.xmissions);
+		}
+
 		if (data.uptime) {
                         $('fieldset#gateway div.uptime').html("Uptime: <b>" + data.uptime.days + " days " + data.uptime.hms + " h:m:s</b>");
                 }
@@ -153,7 +165,7 @@ $(function () {
 		if (data.stats) {
 			var d = new Date(data.timestamp);
 			$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr[data-xmit="' + data.stats.callsign + '"]').attr("class","");
-			if(data.stats.my !== gw.gatewayCallsign && data.stats.my !== data.repeater)
+			if(data.stats.my !== "{{gw.gatewayCallsign}}" && data.stats.my !== data.repeater)
 			$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.stats').html("Last Network Receive: <b>" + data.stats.callsign + "</b> duration <b>" 
 				+ data.stats.xmitlength + "</b><br/>Packet Loss: <b>" + data.stats.packets + " " + data.stats.loss + "</b> at <b>" + d.toLocaleString() + "</b>");
 		}
@@ -165,36 +177,18 @@ $(function () {
 				+ data.ambe.xmitlength + "</b><br/>Silence: <b>" + data.ambe.silence + "</b> BER: <b>" + data.ambe.ber + "</b> at <b>" + d.toLocaleString() + "</b>");
 		}
 
-		if (data.transmit) {
-			if (!data.transmit.flags.startsWith('01') && data.transmit.my !== gw.gatewayCallsign && data.transmit.my !== data.repeater){
-				if (xmissions[data.repeater].length > 9) {
-					var x = xmissions[data.repeater].shift();
-					console.log(data.repeater + " Dropped: " + x.transmit.my);
-				}
-				xmissions[data.repeater].push(data);
-				var tbody = "";
-				xmissions[data.repeater].forEach(function(xmit) {
-					var d = new Date(xmit.timestamp);
-					
-					var txtab = "<tr>\n"; 
-					txtab += "<td>" + d.toLocaleString() + "</td>\n";
-					txtab += "<td>" + xmit.transmit.my + "</td>\n";
-					txtab += "<td>" + xmit.transmit.comment1 + "</td>\n";
-					txtab += "<td>" + xmit.transmit.urcall + "</td>\n";
-					txtab += "<td>" + xmit.transmit.rpt1 + "</td>\n";
-					txtab += "<td>" + xmit.transmit.rpt2 + "</td>\n";
-					txtab += "<td>" + xmit.transmit.flags + "</td>\n";
-					txtab += "</tr>";
-					tbody += txtab;
-				});
-				$('fieldset.repeater[data-repeater="' + data.repeater + '"] div.xmissions tbody').html(tbody);
-				$('fieldset.repeater[data-repeater="' + data.repeater + '"] tr:last').attr("class","xmitter").attr("data-xmit",data.transmit.my);
-			}
+		if (data.xmissions) {
+				xmissionTable(data.xmissions);
+		}
+
+		if (data.xmitting) {
+			$('fieldset.repeater[data-repeater="' + data.xmitting.repeater + '"] tr:last').attr("class","xmitter").attr("data-xmit",data.xmitting.my);
 		}
 
 	});
 	
 });
+
 </script>
 
 

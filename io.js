@@ -115,28 +115,26 @@ var gwstatseconds = 60 * 1000;
 var links = [];
 
 io.on('connection', function(socket) {
-	for (var key in xmissions) {
-		if(!xmissions.hasOwnProperty(key)) continue;
-		var xmit = xmissions[key];
-		for (var i = 0; i < xmit.length; i++) {
-			socket.emit('repeater',xmit[i]);
-		}
-		socket.emit('gateway',{xmitreset:true});
-		socket.emit('gateway',{links:links});
-	}
+	socket.emit('gateway',{xmitreset:true});
+	socket.emit('gateway',{links:links});
+	socket.emit('repeater',{xmissions:xmissions});
 
 	socket.on('disconnect', function(){
 		console.log('Client gone (id=' + socket.id + ').');
 	});
 	socket.on('repeater', function(msg){
-		socket.broadcast.emit('repeater', msg);
 		if (msg.transmit) {
 			if (!msg.transmit.flags.startsWith('01') && msg.transmit.my !== gw.gatewayCallsign && msg.transmit.my !== msg.repeater){
 				xmissions[msg.repeater].push(msg);
 				if (xmissions[msg.repeater].length > 10) {
 					var x = xmissions[msg.repeater].shift();
 				}
+				socket.broadcast.emit('repeater',{xmissions:xmissions});
+				socket.broadcast.emit('repeater',{xmitting:{repeater:msg.repeater,my:msg.transmit.my}});
 			}
+		}
+		else {
+			socket.broadcast.emit('repeater', msg);
 		}
 	});
 
