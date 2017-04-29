@@ -5,12 +5,10 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var exphbs = require('express-handlebars');
+var helpers = require('template-helpers')('math');
+console.log(helpers);
 var hbs = exphbs.create({
-		helpers: {
-			json: function(value) {
-				return JSON.stringify(value);
-			}
-		},
+		helpers: helpers,
 		defaultLayout: 'main',
 		partialsDir: ['views/partials/']
 });

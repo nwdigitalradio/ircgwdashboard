@@ -14,6 +14,7 @@
     "morgan": "~1.7.0",
     "ractive": "^0.8.12",
     "serve-favicon": "~2.3.2",
-    "socket.io": "^1.7.3"
+    "socket.io": "^1.7.3",
+    "template-helpers": "^0.6.7"
   }
 }

@@ -4,13 +4,41 @@
 		<legend>{{gw.gatewayCallsign}} Gateway</legend>
 		<div class="left">
 			<div><b>{{gw.model}}</b></div>
-			<div><b>{{gw.hat.vendor}}&nbsp;{{gw.hat.product}}</b></div>
-			<div class='url'>{{gw.url}}</div>
+			<div class='url'><a href='{{gw.url}}' target='gateway'>{{gw.url}}</a></div>
+			<div>{{gw.description1}}</div>
+			<div>{{gw.description2}}</div>
+			<div>{{gw.description3}}</div>
 		</div>
 		<div class="left">
 			<div class='uptime'></div>
 			<div class='cputemp'></div>
 			<div class='loadavg'></div>
+		</div>
+		<div class="left">
+		Reporting to IRCDDB hosts:</br>
+			<b>
+			{{#if gw.ircddbEnabled}}{{gw.ircddbHostname}}<br/>{{/if}}
+			{{#if gw.ircddbEnabled2}}{{gw.ircddbHostname2}}<br/>{{/if}}
+			{{#if gw.ircddbEnabled3}}{{gw.ircddbHostname3}}<br/>{{/if}}
+			{{#if gw.ircddbEnabled4}}{{gw.ircddbHostname4}}<br/>{{/if}}
+			</b>
+		{{#if gw.aprsEnabled}}
+			APRS Host: <b>{{gw.aprsHostname}}</b><br/>
+		{{/if}}
+		</div>
+		<div class="left">
+		Services:</br>
+		<b>
+			{{#if gw.aprsEnabled}}DPRS-Reporting {{/if}}
+			{{#if gw.ccsEnabled}}CCS-Linking {{/if}}
+			{{#if gw.dcsEnabled}}DCS-Linking {{/if}}
+			{{#if gw.dextraEnabled}}DExtra-Linking {{/if}}
+			{{#if gw.dplusEnabled}}DPlus-Linking {{/if}}
+			{{#if gw.dratsEnabled}}D-RATS-Host {{/if}}
+			{{#if gw.dtmfEnabled}}DTMF-Commands {{/if}}
+			{{#if gw.echoEnabled}}Echo-Command {{/if}}
+			{{#if gw.infoEnabled}}Info-Command {{/if}}
+		</b>
 		</div>
 	</fieldset>
 	{{#each repeaters}}
@@ -41,10 +69,10 @@
 			Frequency: <b>{{frequency}}</b> mHz. Offset: <b>{{offset}}</b><br/>
 			Latitude: <b>{{latitude}}</b>&deg;&nbsp;Longitude: <b>{{longitude}}</b>&deg;&nbsp;<a href='http://maps.google.com/maps?q=loc:{{latitude}},{{longitude}}({{callsign}})' target='new'>map</a><br/>
 			{{#if agl}}
-			Antenna Height Above Ground <b>{{agl}}</b> meters<br/>
+			Antenna Height Above Ground <b>{{agl}}</b> m / <b>{{multiply agl 3.28084}}</b> ft<br/>
 			{{/if}}
 			{{#if rangeKms}}
-			Estimated Range: <b>{{rangeKms}}</b> km<br/>
+			Estimated Range: <b>{{rangeKms}}</b> km / <b>{{multiply rangeKms 0.621371}}</b> mi<br/>
 			{{/if}}
 			{{#if reflector}}
 			Default Reflector: <b>{{reflector}}</b><br/>
@@ -52,6 +80,8 @@
 			Automatic Restart: <b>{{reconnect}}</b><br/>
 			{{/if}}
 		</div>
+	</div>
+	<div class="left">
 		<div class='model'></div>
 		<div class='hat'></div>
 		<div class='url'>

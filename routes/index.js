@@ -20,6 +20,21 @@ String.prototype.trimBetween = function (before,after) {
         return target;
 }
 
+if (!String.prototype.includes) {
+  String.prototype.includes = function(search, start) {
+    'use strict';
+    if (typeof start !== 'number') {
+      start = 0;
+    }
+    
+    if (start + search.length > this.length) {
+      return false;
+    } else {
+      return this.indexOf(search, start) !== -1;
+    }
+  };
+}
+
 function trimNull(a) {
   var c = a.indexOf('\0');
   if (c>-1) {
@@ -105,6 +120,12 @@ Object.keys(gwconf).forEach(function(cKey) {
 	if (key.startsWith("ircddbPassword") || key.startsWith("remote")) {
 		delete gwconf[cKey];
 		console.log("Removed: " + key);
+	}
+	if (key.includes("Enabled")) {
+		if (gwconf[cKey] !== '1') {
+			console.log(key + " removed");
+			delete gwconf[cKey];
+		}
 	}
 });
 /* GET home page. */
