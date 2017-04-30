@@ -1,10 +1,8 @@
 var io = require('socket.io')();
 var fs = require('fs');
 var ini = require("ini");
-// var gwconfig = process.ENV.IRCDDBGATEWAY || '/etc/opendv/ircddbgateway';
-// var LinkLOG = process.ENV.LINKLOG || '/var/log/opendv/Links.log';
-var gwconfig = '/etc/opendv/ircddbgateway';
-var LinkLOG = '/var/log/opendv/Links.log';
+var gwconfig = process.env.IRCDDBGATEWAY || '/etc/opendv/ircddbgateway';
+var LinkLOG = process.env.LINKLOG || '/var/log/opendv/Links.log';
 var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
 var gw = ini.parse(gwConfStr);
 

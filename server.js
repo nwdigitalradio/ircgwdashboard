@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var exphbs = require('express-handlebars');
 var helpers = require('template-helpers')('math');
-console.log(helpers);
+
 var hbs = exphbs.create({
 		helpers: helpers,
 		defaultLayout: 'main',

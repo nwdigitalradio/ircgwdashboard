@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var fs = require("fs");
 var ini = require("ini");
-var gwconfig = '/etc/opendv/ircddbgateway';
+var gwconfig = process.env.IRCDDBGATEWAY || '/etc/opendv/ircddbgateway';
 var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
 var gwconf = ini.parse(gwConfStr);
 var rptrgwdata = [];
@@ -95,7 +95,6 @@ function buildRepeaterBasics(key,gwdata,call){
        	record.reconnect = gwdata['reconnect'+num];
        	record.agl = gwdata['agl'+num];
 	record.rangeKms = gwdata['rangeKms'+num];
-//       	console.log(JSON.stringify(record));
        	return record;
 }
 
