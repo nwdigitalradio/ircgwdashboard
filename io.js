@@ -3,6 +3,7 @@ var fs = require('fs');
 var ini = require("ini");
 var gwconfig = process.env.IRCDDBGATEWAY || '/etc/opendv/ircddbgateway';
 var LinkLOG = process.env.LINKLOG || '/var/log/opendv/Links.log';
+var thermFile = '/sys/class/thermal/thermal_zone0/temp';
 var gwConfStr = fs.readFileSync(gwconfig, { encoding : "UTF-8" });
 var gw = ini.parse(gwConfStr);
 
@@ -46,7 +47,7 @@ function trimNull(a) {
 }
 
 function getModel() {
-        var mod = 'unknown';
+        var mod = '';
         var modelfile = "/proc/device-tree/model";
         if (fs.existsSync(modelfile)) {
                 var model = fs.readFileSync(modelfile).toString();
@@ -183,7 +184,8 @@ io.on('connection', function(socket) {
                                         gwstats['loadavg'] = loadavg;
                                 }
                         });
-                fs.readFileSync("/sys/class/thermal/thermal_zone0/temp").toString().split('\n').forEach(
+		if (fs.existsSync(thermFile)) {
+                	fs.readFileSync(thermFile).toString().split('\n').forEach(
                         function(line) {
                                 if (line.trim().length > 0) {
                                         var cputemp = {};
@@ -195,6 +197,27 @@ io.on('connection', function(socket) {
                                         gwstats['cputemp'] = cputemp;
                                 }
                         });
+		} else {
+			var lm_sensors = require('sensors.js');
+	        
+/*
+		        lm_sensors.sensors(function (data, error) {
+		        	if (error) throw error;
+	        		console.log(data); 
+				
+				//core temperature is embedded object, appears standard for all motherboards
+				var temps = data['coretemp-isa-0000']['ISA adapter']['Core 0']['value'];
+																			
+				// temps is already in centigrade
+				//var centigrade = temps / 1000;
+		        	var centigrade = temps;
+		        	var fahrenheit = (centigrade * 1.8) + 32;
+				centigrade = Math.round(centigrade * 100) / 100;
+				fahrenheit = Math.round(fahrenheit * 100) / 100;
+				stats['cputemp'] = centigrade + "C " + fahrenheit + "F";
+			});		
+*/
+		}
                 gwstats['timestamp'] = new Date().getTime();
                 socket.broadcast.emit("gateway", gwstats);
 	}, gwstatseconds);
