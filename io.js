@@ -214,7 +214,7 @@ io.on('connection', function(socket) {
 		        	var fahrenheit = (centigrade * 1.8) + 32;
 				centigrade = Math.round(centigrade * 100) / 100;
 				fahrenheit = Math.round(fahrenheit * 100) / 100;
-				stats['cputemp'] = centigrade + "C " + fahrenheit + "F";
+				gwstats['cputemp'] = centigrade + "C " + fahrenheit + "F";
 			});		
 */
 		}
